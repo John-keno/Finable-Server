@@ -1,6 +1,5 @@
-import { Account } from "./account.type";
-import { Card } from "./card.type";
+import { ICipherAccount } from "./account.type";
 import { RegisterType } from "./register.type";
 import { LoginType } from "./login.type";
 
-export type { Account, Card, RegisterType, LoginType };
+export type { RegisterType, LoginType, ICipherAccount };

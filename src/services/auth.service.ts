@@ -52,10 +52,6 @@ export default class AuthService {
 				match: { cardId: account.accountId },
 			})
 			.session(session ?? null);
-
-
-    
-
 		if (!user) {
 			throw new ClientError("Account not found", 404);
 		}

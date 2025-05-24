@@ -2,6 +2,7 @@ import { model, Schema } from "mongoose";
 import { IAccount } from "../common/interfaces";
 import { generateDBUniqueKeyId, generateUniqueId } from "../utils";
 import CryptoService from "../services/crypto.services";
+import { ICipherAccount } from "../common/types";
 
 const { encryptData, decryptData } = new CryptoService();
 
@@ -24,17 +25,19 @@ const AccountSchema = new Schema<IAccount>(
 			type: String,
 			required: true,
 			unique: true,
-			set: encryptData,
-			get: decryptData,
+			set: encryptData,	
 		},
 		dateOfBirth: {
 			type: String,
 			required: true,
 			set: encryptData,
-			get: decryptData,
 		},
-		email: { type: String, required: [true, "Email is required"], unique: true },
-		password: { type: String, required:[true, "password is required"] },
+		email: {
+			type: String,
+			required: [true, "Email is required"],
+			unique: true,
+		},
+		password: { type: String, required: [true, "password is required"] },
 	},
 	{
 		timestamps: true,
@@ -44,13 +47,8 @@ const AccountSchema = new Schema<IAccount>(
 			transform: function (doc, ret) {
 				const data = {
 					accountId: ret.accountId,
-					firstName: ret.firstName,
-					surname: ret.surname,
-					accountNumber: ret.accountNumber,
-					phonenumber: ret.phoneNumber,
-					dateOfBirth: ret.dateOfBirth,
-					email: ret.email,
-					virtualCard: ret.VirtualCard,
+					encrypted: ret.encrypted,
+					decrypted: ret.decrypted,
 					createdAt: ret.createdAt,
 					updatedAt: ret.updatedAt,
 				};
@@ -64,13 +62,8 @@ const AccountSchema = new Schema<IAccount>(
 			transform: function (doc, ret) {
 				const data = {
 					accountId: ret.accountId,
-					firstName: ret.firstName,
-					surname: ret.surname,
-					accountNumber: ret.accountNumber,
-					phonenumber: ret.phoneNumber,
-					dateOfBirth: ret.dateOfBirth,
-					email: ret.email,
-					virtualCard: ret.VirtualCard,
+					encrypted: ret.encrypted,
+					decrypted: ret.decrypted,
 					createdAt: ret.createdAt,
 					updatedAt: ret.updatedAt,
 				};
@@ -86,6 +79,38 @@ AccountSchema.virtual("VirtualCard", {
 	localField: "accountId",
 	foreignField: "cardId",
 	justOne: true,
+});
+
+AccountSchema.virtual("decrypted").get(function () {
+	const virtualCard = this.get("VirtualCard");
+	const data: ICipherAccount = {
+		fullName: `${this.firstName} ${this.surname}`,
+		accountNumber: this.accountNumber,
+		phoneNumber: decryptData(this.phoneNumber),
+		dateOfBirth: decryptData(this.dateOfBirth),
+		email: this.email,
+		virtualCard: {
+			cardId: virtualCard.cardId,
+			cardNumber: decryptData(virtualCard.cardNumber),
+			cvv: decryptData(virtualCard.cvv),
+			expiryDate: decryptData(virtualCard.expiryDate),
+			isActive: virtualCard.isActive,
+		}
+	};
+	return data;
+});
+
+AccountSchema.virtual("encrypted").get(function () {
+	const virtualCard = this.get("VirtualCard");
+	const data: ICipherAccount = {
+		fullName: `${this.firstName} ${this.surname}`,
+		accountNumber: this.accountNumber,
+		phoneNumber: this.phoneNumber,
+		dateOfBirth: this.dateOfBirth,
+		email: this.email,
+		virtualCard: virtualCard
+	};
+	return data;
 });
 
 const AccountModel = model<IAccount>("Accounts", AccountSchema);

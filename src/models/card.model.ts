@@ -23,20 +23,17 @@ const CardSchema = new Schema<ICard>(
 			unique: true,
 			required: [true, "Card number is required"],
 			set: encryptData,
-			get: decryptData,
 		},
 		expiryDate: {
 			type: String,
 			default: () => getExpirationDate(3),
 			required: [true, "Expiry date is required"],
 			set: encryptData,
-			get: decryptData,
 		},
 		cvv: {
 			type: String,
 			default: () => generateUniqueId(3),
 			set: encryptData,
-			get: decryptData,
 			required: [true, "CVV is required"],
 			trim: true,
 		},
@@ -86,7 +83,7 @@ CardSchema.pre(["find", "findOne"], function (next) {
 		// If doc is an array, process each item i.e for find
 		if (Array.isArray(doc)) {
 			doc.forEach((item) => {
-				const decryptedDate = item.expiryDate;
+				const decryptedDate = decryptData(item.expiryDate);
 				const createdAt = new Date(item.createdAt.toString());
 				item.isActive = !isExpired(decryptedDate, createdAt);
 			});

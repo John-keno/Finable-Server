@@ -1,58 +1,78 @@
+import { ClientSession } from "mongoose";
 import { RegisterType } from "../common/types";
 import { AccountModel, CardModel } from "../models";
+import { ClientError, hashPassword } from "../utils";
 
 export default class AuthService {
+	async register(data: RegisterType, session?: ClientSession): Promise<object> {
+		const existingAccount = await AccountModel.findOne({
+			email: data.email,
+		}).session(session ?? null);
+		if (existingAccount) {
+			throw new ClientError("Email already exists", 400);
+		}
 
-    async register(data: RegisterType): Promise<any> {
-        const account = await AccountModel.create({
-            firstName: data.firstName,
-            surname: data.surname,
-            dateOfBirth: data.dateOfBirth,
-            email: data.email,
-            password: data.password,
-            phoneNumber: data.phoneNumber,
-        });
+		const hashedPassword = await hashPassword(data.password);
+		if (!hashedPassword) {
+			// Hashing failed
+			throw new ClientError(
+				"Account creation failed with ErrorCode:PHERR002",
+				500
+			);
+		}
 
-        if (!account) {
-            throw new Error("Account creation failed");
-        }
+		const account = new AccountModel({
+			firstName: data.firstName,
+			surname: data.surname,
+			dateOfBirth: data.dateOfBirth,
+			email: data.email,
+			password: hashedPassword,
+			phoneNumber: data.phoneNumber,
+		});
 
-        const card = await CardModel.create({
-            accountNumber: account.accountNumber,
-        });
+		await account.save({ session });
 
-        const user = await AccountModel.find({}).populate('VirtualCard').lean();
-        // console.log(user);
-        if (!user) {
-            throw new Error("Account not found");
-        }
+		if (!account) {
+			throw new ClientError("Account creation failed", 400);
+		}
 
-        return user;
+		const card = new CardModel({
+			cardId: account.accountId,
+		});
 
-    }
+		card.save({ session });
 
-    async getAccount(accountId?: string): Promise<any> {
-         const user = await AccountModel.find({}).populate("VirtualCard", "cardId accountNumber isActive cardNumber expiryDate cvv").lean();
-        // console.log(user);
-        if (!user) {
-            throw new Error("Account not found");
-        }
+		if (!card) {
+			throw new ClientError("Card creation failed", 400);
+		}
 
-        return user;
-    }
-
-    async login(email: string, password: string): Promise<string> {
-        return 'login_token';
-    }
-
-
-	
+		const user = await AccountModel.findOne({ _id: account._id })
+			.populate({
+				path: "VirtualCard",
+				match: { cardId: account.accountId },
+			})
+			.session(session ?? null);
 
 
+    
+
+		if (!user) {
+			throw new ClientError("Account not found", 404);
+		}
+		return user;
+	}
+	async login(email: string, password: string): Promise<string> {
+		return "login_token";
+	}
+
+
+	async getAccount(accountId?: string): Promise<object> {
+		const user = await AccountModel.find({}).populate("VirtualCard").lean();
+
+		if (!user) {
+			throw new Error("Account not found");
+		}
+
+		return user;
+	}
 }
-
-
-
-
-
-

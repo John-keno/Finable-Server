@@ -3,7 +3,7 @@ import { IAccount } from "../common/interfaces";
 import { generateDBUniqueKeyId, generateUniqueId } from "../utils";
 import CryptoService from "../services/crypto.services";
 
-const { encryptData } = new CryptoService();
+const { encryptData, decryptData } = new CryptoService();
 
 const AccountSchema = new Schema<IAccount>(
 	{
@@ -25,20 +25,66 @@ const AccountSchema = new Schema<IAccount>(
 			required: true,
 			unique: true,
 			set: encryptData,
+			get: decryptData,
 		},
-		dateOfBirth: { type: String, required: true, set: encryptData },
-		email: { type: String, required: true, unique: true },
-		password: { type: String, required: true },
+		dateOfBirth: {
+			type: String,
+			required: true,
+			set: encryptData,
+			get: decryptData,
+		},
+		email: { type: String, required: [true, "Email is required"], unique: true },
+		password: { type: String, required:[true, "password is required"] },
 	},
 	{
 		timestamps: true,
+		toJSON: {
+			virtuals: true,
+			getters: true,
+			transform: function (doc, ret) {
+				const data = {
+					accountId: ret.accountId,
+					firstName: ret.firstName,
+					surname: ret.surname,
+					accountNumber: ret.accountNumber,
+					phonenumber: ret.phoneNumber,
+					dateOfBirth: ret.dateOfBirth,
+					email: ret.email,
+					virtualCard: ret.VirtualCard,
+					createdAt: ret.createdAt,
+					updatedAt: ret.updatedAt,
+				};
+
+				return data;
+			},
+		},
+		toObject: {
+			virtuals: true,
+			getters: true,
+			transform: function (doc, ret) {
+				const data = {
+					accountId: ret.accountId,
+					firstName: ret.firstName,
+					surname: ret.surname,
+					accountNumber: ret.accountNumber,
+					phonenumber: ret.phoneNumber,
+					dateOfBirth: ret.dateOfBirth,
+					email: ret.email,
+					virtualCard: ret.VirtualCard,
+					createdAt: ret.createdAt,
+					updatedAt: ret.updatedAt,
+				};
+
+				return data;
+			},
+		},
 	}
 );
 
 AccountSchema.virtual("VirtualCard", {
 	ref: "Cards",
-	localField: "accountNumber",
-	foreignField: "accountNumber",
+	localField: "accountId",
+	foreignField: "cardId",
 	justOne: true,
 });
 

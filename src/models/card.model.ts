@@ -17,28 +17,26 @@ const CardSchema = new Schema<ICard>(
 			default: generateDBUniqueKeyId(), // Make it a function to ensure unique IDs
 			unique: true,
 		},
-		accountNumber: {
-			type: String,
-			required: [true, "Account number is required"],
-			trim: true,
-		},
 		cardNumber: {
 			type: String,
 			default: () => generateUniqueId(16),
 			unique: true,
 			required: [true, "Card number is required"],
-			set: (value: string) => encryptData(value),
+			set: encryptData,
+			get: decryptData,
 		},
 		expiryDate: {
 			type: String,
 			default: () => getExpirationDate(3),
 			required: [true, "Expiry date is required"],
-			set: (value: string) => encryptData(value),
+			set: encryptData,
+			get: decryptData,
 		},
 		cvv: {
 			type: String,
 			default: () => generateUniqueId(3),
-			set: (value: string) => encryptData(value),
+			set: encryptData,
+			get: decryptData,
 			required: [true, "CVV is required"],
 			trim: true,
 		},
@@ -50,50 +48,55 @@ const CardSchema = new Schema<ICard>(
 	},
 	{
 		timestamps: true,
-        virtuals:true,
+		virtuals: true,
 		toJSON: {
 			transform: function (doc, ret) {
-                delete ret._id;
-				delete ret.__v;
-				delete ret.createdAt;
-				delete ret.updatedAt;
-				return ret;
+				const data = {
+					cardId: ret.cardId,
+					cardNumber: ret.cardNumber,
+					cvv: ret.cvv,
+					expiryDate: ret.expiryDate,
+					isActive: ret.isActive,
+				};
+
+				return data;
 			},
 		},
-        toObject: {
-            transform: function (doc, ret) {
-                delete ret._id;
-				delete ret.__v;
-				delete ret.createdAt;
-				delete ret.updatedAt;
-				return ret;
+		toObject: {
+			transform: function (doc, ret) {
+				const data = {
+					cardId: ret.cardId,
+					cardNumber: ret.cardNumber,
+					cvv: ret.cvv,
+					expiryDate: ret.expiryDate,
+					isActive: ret.isActive,
+					createdAt: ret.createdAt,
+					updatedAt: ret.updatedAt,
+				};
+
+				return data;
 			},
-        }
+		},
 	}
 );
 
 // Add middleware to update isActive field before any query
 CardSchema.pre(["find", "findOne"], function (next) {
-	this.transform((doc) => {
+	this.transform((doc: ICard) => {
 		// If doc is an array, process each item i.e for find
 		if (Array.isArray(doc)) {
 			doc.forEach((item) => {
-				console.log("item", typeof item.createdAt);
-				console.log("item", item.createdAt);
-				const decryptedDate = decryptData(item.expiryDate);
+				const decryptedDate = item.expiryDate;
 				const createdAt = new Date(item.createdAt.toString());
 				item.isActive = !isExpired(decryptedDate, createdAt);
-				console.log("item.isActive", item.isActive);
 			});
 		}
 
 		// If doc is not an array, process it directly i.e for findOne
 		else if (!Array.isArray(doc)) {
-			console.log("not array");
 			const decryptedDate = decryptData(doc.expiryDate);
 			const createdAt = new Date(doc.createdAt);
 			doc.isActive = !isExpired(decryptedDate, createdAt);
-			console.log("item.isActive", doc.isActive);
 		}
 		return doc;
 	});

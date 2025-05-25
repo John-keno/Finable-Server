@@ -1,4 +1,4 @@
-import { clientError } from './../middlewares/errorHandler.middleware';
+import { paginate } from './paginate.util';
 import {
 	generateAccessToken,
 	generateRefreshToken,
@@ -23,4 +23,5 @@ export {
     loggerUtil,
     ClientError,
     getExpirationDate,
+	paginate
 };

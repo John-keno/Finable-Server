@@ -3,12 +3,12 @@ import bcrypt from "bcryptjs";
 
 import { JWT_SECRET, JWT_REFRESH_SECRET } from "../config";
 
-export function generateAccessToken(userId: string): string {
-	return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "15m" });
+export function generateAccessToken(accountId: string): string {
+	return jwt.sign({ accountId }, JWT_SECRET, { expiresIn: "15m" });
 }
 
-export function generateRefreshToken(userId: string) {
-	return jwt.sign({ userId }, JWT_REFRESH_SECRET, { expiresIn: "1d" });
+export function generateRefreshToken(accountId: string) {
+	return jwt.sign({ accountId }, JWT_REFRESH_SECRET, { expiresIn: "1d" });
 }
 
 export function verifyAccessToken(token: string): string | jwt.JwtPayload {

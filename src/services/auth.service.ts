@@ -1,7 +1,14 @@
 import { ClientSession } from "mongoose";
-import { RegisterType } from "../common/types";
+import { AccountResponse, RegisterType } from "../common/types";
 import { AccountModel, CardModel } from "../models";
-import { ClientError, hashPassword } from "../utils";
+import {
+	checkPassword,
+	ClientError,
+	generateAccessToken,
+	generateRefreshToken,
+	hashPassword,
+} from "../utils";
+import { IAccount, ICard } from "../common/interfaces";
 
 export default class AuthService {
 	async register(data: RegisterType, session?: ClientSession): Promise<object> {
@@ -12,7 +19,7 @@ export default class AuthService {
 			throw new ClientError("Email already exists", 400);
 		}
 
-		const hashedPassword = await hashPassword(data.password);
+		const hashedPassword: string = await hashPassword(data.password);
 		if (!hashedPassword) {
 			// Hashing failed
 			throw new ClientError(
@@ -21,7 +28,7 @@ export default class AuthService {
 			);
 		}
 
-		const account = new AccountModel({
+		const account: IAccount = new AccountModel({
 			firstName: data.firstName,
 			surname: data.surname,
 			dateOfBirth: data.dateOfBirth,
@@ -36,7 +43,7 @@ export default class AuthService {
 			throw new ClientError("Account creation failed", 400);
 		}
 
-		const card = new CardModel({
+		const card: ICard = new CardModel({
 			cardId: account.accountId,
 		});
 
@@ -55,15 +62,29 @@ export default class AuthService {
 		if (!user) {
 			throw new ClientError("Account not found", 404);
 		}
+		console.log(user);
 		return user;
 	}
-	async login(email: string, password: string): Promise<string> {
-		return "login_token";
+	async login(email: string, password: string): Promise<IAccount> {
+		const user = await AccountModel.findOne({ email });
+		console.log(user);
+		if (!user) {
+			throw new ClientError("Invalid Email and Password", 400);
+		}
+		const isPassword = await checkPassword(password, user.password);
+
+		if (!isPassword) {
+			throw new ClientError("Invalid Email and Password", 400);
+		}
+
+		return user;
 	}
 
-
 	async getAccount(accountId?: string): Promise<object> {
-		const user = await AccountModel.find({}).populate("VirtualCard").lean();
+		const user = await AccountModel.findOne({ accountId }).populate({
+			path: "VirtualCard",
+			match: { cardId: accountId },
+		});
 
 		if (!user) {
 			throw new Error("Account not found");

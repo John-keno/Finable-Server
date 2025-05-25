@@ -1,3 +1,3 @@
-import AccountController from "./account.controller";
+import AuthController from "./auth.controller";
 
-export default AccountController;
+export { AuthController };

@@ -43,7 +43,6 @@ const AccountSchema = new Schema<IAccount>(
 		timestamps: true,
 		toJSON: {
 			virtuals: true,
-			getters: true,
 			transform: function (doc, ret) {
 				const data = {
 					accountId: ret.accountId,
@@ -58,7 +57,6 @@ const AccountSchema = new Schema<IAccount>(
 		},
 		toObject: {
 			virtuals: true,
-			getters: true,
 			transform: function (doc, ret) {
 				const data = {
 					accountId: ret.accountId,
@@ -83,34 +81,42 @@ AccountSchema.virtual("VirtualCard", {
 
 AccountSchema.virtual("decrypted").get(function () {
 	const virtualCard = this.get("VirtualCard");
+	let card;
+	if (virtualCard){
+		card = {
+			cardId: virtualCard?.cardId,
+			cardNumber: decryptData(virtualCard.cardNumber),
+			cvv: decryptData(virtualCard.cvv),
+			expiryDate: decryptData(virtualCard.expiryDate),
+			isActive: virtualCard.isActive,
+		}
+	}
 	const data: ICipherAccount = {
 		fullName: `${this.firstName} ${this.surname}`,
 		accountNumber: this.accountNumber,
 		phoneNumber: decryptData(this.phoneNumber),
 		dateOfBirth: decryptData(this.dateOfBirth),
 		email: this.email,
-		virtualCard: {
-			cardId: virtualCard.cardId,
-			cardNumber: decryptData(virtualCard.cardNumber),
-			cvv: decryptData(virtualCard.cvv),
-			expiryDate: decryptData(virtualCard.expiryDate),
-			isActive: virtualCard.isActive,
-		}
+		virtualCard: card
 	};
 	return data;
 });
 
-AccountSchema.virtual("encrypted").get(function () {
+AccountSchema.virtual("encrypted").get( function () {
 	const virtualCard = this.get("VirtualCard");
+	let card;
+	if (virtualCard) card = virtualCard;
 	const data: ICipherAccount = {
 		fullName: `${this.firstName} ${this.surname}`,
 		accountNumber: this.accountNumber,
 		phoneNumber: this.phoneNumber,
 		dateOfBirth: this.dateOfBirth,
 		email: this.email,
-		virtualCard: virtualCard
+		virtualCard: card
 	};
+	console.log(data)
 	return data;
+
 });
 
 const AccountModel = model<IAccount>("Accounts", AccountSchema);

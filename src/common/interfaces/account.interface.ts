@@ -1,5 +1,4 @@
 import { Document } from "mongoose";
-import { Card } from "../types";
 
 export interface IAccount extends Document {
 	accountId: string;
@@ -8,7 +7,6 @@ export interface IAccount extends Document {
 	accountNumber: string;
 	phoneNumber: string;
 	dateOfBirth: string;
-	card: Card;
 	email: string;
 	password: string;
 	createdAt: Date;

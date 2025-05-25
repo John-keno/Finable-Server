@@ -43,7 +43,6 @@ export default class AuthController {
 					password,
 					phoneNumber,
 				};
-				console.log(session.hasEnded);
 				const account = (await register(
 					userAccount,
 					session
@@ -68,7 +67,7 @@ export default class AuthController {
 			if (session.inTransaction()) {
 				await session.abortTransaction();
 			}
-			return next(error);
+			return next(new ClientError());
 		} finally {
 			await session.endSession();
 		}
@@ -84,10 +83,8 @@ export default class AuthController {
 	async loginUser(req: Request, res: Response, next: NextFunction) {
 		try {
 			const { email, password } = req.body;
-			console.log(email);
-			console.log(password);
 			const user: IAccount = await login(email, password);
-			console.log(user);
+			
 			if (!user) {
 				return next(new ClientError("Invalid Email or Password", 400));
 			}
@@ -111,7 +108,7 @@ export default class AuthController {
 				data: user,
 			});
 		} catch (error) {
-			next(console.log(error));
+			next(new ClientError());
 		}
 	}
 	/**
@@ -134,7 +131,7 @@ export default class AuthController {
 				data,
 			});
 		} catch (error) {
-			next(error);
+			next(new ClientError());
 		}
 	}
 
@@ -158,7 +155,7 @@ export default class AuthController {
 
 			res.status(200).send({ accessToken });
 		} catch (error) {
-			next(error);
+			next(new ClientError());
 		}
 	}
 
@@ -186,7 +183,7 @@ export default class AuthController {
 				message: "User logged out successfully",
 			});
 		} catch (error) {
-			next(error);
+			next(new ClientError());
 		}
 	}
 }

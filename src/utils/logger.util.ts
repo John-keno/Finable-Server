@@ -26,6 +26,7 @@ export default createLogger({
 	),
 	transports: [
 		new transports.Console({
+			level:"info",
 			format: format.combine(
 				format.printf(
 					({ timestamp, level, message }) =>

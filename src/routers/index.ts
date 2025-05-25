@@ -6,6 +6,6 @@ const router: Router = Router();
 
 export default function(): Router{
     AuthRoutes(router);
-    AccountRoutes(router);
+    router.use(AccountRoutes());
     return router
 }

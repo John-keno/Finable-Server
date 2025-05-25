@@ -1,4 +1,4 @@
-import { ClientError } from "../utils";
+import { ClientError, loggerUtil } from "../utils";
 import { Request, Response, NextFunction } from "express";
 
 // Error handling for routes that are not found
@@ -17,6 +17,7 @@ export function clientError(
 	if (err instanceof ClientError) {
 		const statusCode = err.statusCode || 500;
 		const message = err.message || "Internal Server Error";
+		
 		res.status(statusCode).json({ 
             success: false,
             message, 

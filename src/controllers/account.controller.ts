@@ -2,6 +2,7 @@ import { NextFunction, Response } from "express";
 import { AuthRequest } from "../common/interfaces";
 import { AccountService } from "../services";
 import { EncryptedAccountData } from "../common/types";
+import { ClientError } from "../utils";
 
 const { getAllAccounts, decryptAccountDetails } = new AccountService();
 export default class AccountController {
@@ -18,11 +19,12 @@ export default class AccountController {
 				...usersAccount,
 			});
 		} catch (error) {
-			next(error);
+			next(new ClientError());
 		}
 	}
 
 	async getDecryptedData(req: AuthRequest, res: Response, next: NextFunction) {
+
 		try {
 			const { phoneNumber, dateOfBirth, cardNumber, cvv, expiryDate } = req.body;
 			const encryptedData: Partial<EncryptedAccountData> = {
@@ -48,7 +50,7 @@ export default class AccountController {
             })
 
 		} catch (error) {
-            next(error);
+            next(new ClientError());
         }
 	}
 }

@@ -1,6 +1,7 @@
 import { Response, NextFunction, RequestHandler } from "express";
 import { ZodError, ZodType } from "zod";
 import { AuthRequest } from "../common/interfaces";
+import { ClientError } from "../utils";
 
 export const RequestValidator =
 	(schema: ZodType<any>): RequestHandler =>
@@ -19,6 +20,6 @@ export const RequestValidator =
 					errors,
 				});
 			}
-			next(err);
+			next(new ClientError());
 		}
 	};

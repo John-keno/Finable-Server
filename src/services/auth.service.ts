@@ -62,12 +62,10 @@ export default class AuthService {
 		if (!user) {
 			throw new ClientError("Account not found", 404);
 		}
-		console.log(user);
 		return user;
 	}
 	async login(email: string, password: string): Promise<IAccount> {
 		const user = await AccountModel.findOne({ email });
-		console.log(user);
 		if (!user) {
 			throw new ClientError("Invalid Email and Password", 400);
 		}

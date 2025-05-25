@@ -46,7 +46,12 @@ const AccountSchema = new Schema<IAccount>(
 			transform: function (doc, ret) {
 				const data = {
 					accountId: ret.accountId,
-					encrypted: ret.encrypted,
+					fullName: ret.fullName,
+					accountNumber: ret.accountNumber,
+					phoneNumber: ret.phoneNumber,
+					dateOfBirth: ret.dateOfBirth,
+					email: ret.email,
+					virtualCard: ret.VirtualCard,
 					decrypted: ret.decrypted,
 					createdAt: ret.createdAt,
 					updatedAt: ret.updatedAt,
@@ -60,7 +65,12 @@ const AccountSchema = new Schema<IAccount>(
 			transform: function (doc, ret) {
 				const data = {
 					accountId: ret.accountId,
-					encrypted: ret.encrypted,
+					fullName: ret.fullName,
+					accountNumber: ret.accountNumber,
+					phoneNumber: ret.phoneNumber,
+					dateOfBirth: ret.dateOfBirth,
+					email: ret.email,
+					virtualCard: ret.VirtualCard,
 					decrypted: ret.decrypted,
 					createdAt: ret.createdAt,
 					updatedAt: ret.updatedAt,
@@ -79,6 +89,10 @@ AccountSchema.virtual("VirtualCard", {
 	justOne: true,
 });
 
+AccountSchema.virtual("fullName").get(function(){
+	return `${this.firstName} ${this.surname}`
+})
+
 AccountSchema.virtual("decrypted").get(function () {
 	const virtualCard = this.get("VirtualCard");
 	let card;
@@ -92,7 +106,7 @@ AccountSchema.virtual("decrypted").get(function () {
 		}
 	}
 	const data: ICipherAccount = {
-		fullName: `${this.firstName} ${this.surname}`,
+		fullName: this.get("fullName"),
 		accountNumber: this.accountNumber,
 		phoneNumber: decryptData(this.phoneNumber),
 		dateOfBirth: decryptData(this.dateOfBirth),
@@ -100,23 +114,6 @@ AccountSchema.virtual("decrypted").get(function () {
 		virtualCard: card
 	};
 	return data;
-});
-
-AccountSchema.virtual("encrypted").get( function () {
-	const virtualCard = this.get("VirtualCard");
-	let card;
-	if (virtualCard) card = virtualCard;
-	const data: ICipherAccount = {
-		fullName: `${this.firstName} ${this.surname}`,
-		accountNumber: this.accountNumber,
-		phoneNumber: this.phoneNumber,
-		dateOfBirth: this.dateOfBirth,
-		email: this.email,
-		virtualCard: card
-	};
-	console.log(data)
-	return data;
-
 });
 
 const AccountModel = model<IAccount>("Accounts", AccountSchema);

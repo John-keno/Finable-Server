@@ -41,7 +41,7 @@ export default class AccountService {
         try {
             decryptedData[fieldName] = decryptData(value);
         } catch (error: any) {
-            errors[fieldName] = `Failed to decrypt ${fieldName}: ${error.message}`;
+            errors[fieldName] = `Failed to decrypt ${fieldName}. Data not Valid`;
         }
     };
         

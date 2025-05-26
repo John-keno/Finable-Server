@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(COOKIE_SECRET));
 app.use(requestLogger);
 
-app.use("/", AllRoutes());
+app.use("/api/v1/", AllRoutes());
 app.get("/", async (_req: Request, res: Response) => {
 	res
 		.status(200)

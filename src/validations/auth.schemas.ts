@@ -4,10 +4,10 @@ import z from "zod";
 export const RegistrationSchema = z.object({
     firstName: z.string().min(1, "firstName is required"),
     surname: z.string().min(1, "surname is required"),
-    dateOfBirth: z.string().regex(/^\d{2}-\d{2}-\d{4}$/, "Date must be in DD-MM-YYYY format"),
+    dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
     phoneNumber: z.string()
-        .min(10, "Phone number must be at least 10 digits")
-        .max(10, "Phone number must not exceed 10 digits"),
+        .min(11, "Phone number must be at least 11 digits")
+        .max(11, "Phone number must not exceed 11 digits"),
     email: z.string({message: "Email is required"}).email({message: "Email is not valid"}),
     password: z.string()
         .min(8, "Password must be at least 8 characters")

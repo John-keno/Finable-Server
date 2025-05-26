@@ -67,6 +67,9 @@ export default class AuthController {
 			if (session.inTransaction()) {
 				await session.abortTransaction();
 			}
+			if (error instanceof ClientError){
+				return next(new ClientError(error.message, error.statusCode));
+			}
 			return next(new ClientError());
 		} finally {
 			await session.endSession();
@@ -108,7 +111,10 @@ export default class AuthController {
 				data: user,
 			});
 		} catch (error) {
-			next(new ClientError());
+			if (error instanceof ClientError){
+				return next(new ClientError(error.message, error.statusCode));
+			}
+			return next(new ClientError());
 		}
 	}
 	/**
@@ -131,7 +137,10 @@ export default class AuthController {
 				data,
 			});
 		} catch (error) {
-			next(new ClientError());
+			if (error instanceof ClientError){
+				return next(new ClientError(error.message, error.statusCode));
+			}
+			return next(new ClientError());
 		}
 	}
 
@@ -155,7 +164,10 @@ export default class AuthController {
 
 			res.status(200).send({ accessToken });
 		} catch (error) {
-			next(new ClientError());
+			if (error instanceof ClientError){
+				return next(new ClientError(error.message, error.statusCode));
+			}
+			return next(new ClientError());
 		}
 	}
 
@@ -183,7 +195,10 @@ export default class AuthController {
 				message: "User logged out successfully",
 			});
 		} catch (error) {
-			next(new ClientError());
+			if (error instanceof ClientError){
+				return next(new ClientError(error.message, error.statusCode));
+			}
+			return next(new ClientError());
 		}
 	}
 }

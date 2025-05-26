@@ -4,7 +4,7 @@ import { COOKIE_NAME } from "../config";
 import { AuthRequest } from "../common/interfaces";
 import { ClientError, verifyAccessToken, verifyRefreshToken } from "../utils";
 
-export const verifyToken = (
+export const verifyAccess = (
 	req: AuthRequest,
 	res: Response,
 	next: NextFunction

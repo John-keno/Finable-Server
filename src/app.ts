@@ -23,7 +23,7 @@ app.use("/api/v1/", AllRoutes());
 app.get("/", async (_req: Request, res: Response) => {
 	res
 		.status(200)
-		.send("welcome to the finable API a place where udorka lagacy is more");
+		.send("welcome to the 🌍 Finable API. A system reborn");
 });
 
 app.use(notFoundError);

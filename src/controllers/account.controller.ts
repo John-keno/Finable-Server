@@ -19,8 +19,9 @@ export default class AccountController {
 		next: NextFunction
 	) {
 		try {
-			const { limit, page } = req.query;
-			const usersAccount = await getAllAccounts(1, 10);
+			const limit = parseInt(req.query.limit as string) || 10;
+			const page = parseInt(req.query.page as string) || 1
+			const usersAccount = await getAllAccounts(page, limit);
 
 			res.status(200).json({
 				...usersAccount,
